@@ -63,13 +63,22 @@ __version__ = "0.9.5.dev0"  # expected format is one of x.y.z.dev0, or x.y.z.rc1
 REQUIRED_PKGS = [
     "torch>=1.4.0",
     "transformers>=4.31.0",
-    "numpy>=1.18.2",
+    "numpy>=1.18.2,<2.0.0",
     "accelerate",
     "datasets",
     "tyro>=0.5.11",
 ]
 EXTRAS = {
-    "test": ["parameterized", "pytest", "pytest-xdist", "accelerate", "pytest-cov", "pytest-xdist", "scikit-learn"],
+    "test": [
+        "parameterized",
+        "pytest",
+        "pytest-xdist",
+        "accelerate",
+        "pytest-cov",
+        "pytest-xdist",
+        "scikit-learn",
+        "Pillow",
+    ],
     "peft": ["peft>=0.4.0"],
     "diffusers": ["diffusers>=0.18.0"],
     "deepspeed": ["deepspeed>=0.9.5"],
