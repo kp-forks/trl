@@ -270,13 +270,13 @@ class KTOTrainer(_BaseTrainer):
         if processing_class is None:
             processing_class = AutoProcessor.from_pretrained(get_config_model_id(model.config))
         if isinstance(processing_class, ProcessorMixin):
-            tokenizer = processing_class.tokenizer
+            self._tokenizer = processing_class.tokenizer
         elif isinstance(processing_class, PreTrainedTokenizerBase):
-            tokenizer = processing_class
+            self._tokenizer = processing_class
         else:
             raise TypeError("The `processing_class` must be either a `PreTrainedTokenizerBase` or a `ProcessorMixin`")
-        if tokenizer.pad_token is None:
-            tokenizer.pad_token = tokenizer.eos_token
+        if self._tokenizer.pad_token is None:
+            self._tokenizer.pad_token = self._tokenizer.eos_token
 
         # PEFT
         if peft_config is not None:
@@ -345,7 +345,7 @@ class KTOTrainer(_BaseTrainer):
 
         if data_collator is None:
             data_collator = DataCollatorForUnpairedPreference(
-                pad_token_id=tokenizer.pad_token_id,
+                pad_token_id=self._tokenizer.pad_token_id,
                 max_length=max_length,
             )
 
@@ -569,8 +569,6 @@ class KTOTrainer(_BaseTrainer):
                     map_kwargs["desc"] = f"Unpairing {dataset_name} dataset"
                 dataset = unpair_preference_dataset(dataset, **map_kwargs)
 
-            tokenizer = getattr(processing_class, "tokenizer", processing_class)
-
             # Add EOS token if needed: non-conversational only
             first_example = next(iter(dataset))
             if not is_conversational(first_example):
@@ -582,7 +580,7 @@ class KTOTrainer(_BaseTrainer):
                         example["completion"] = example["completion"] + eos_token
                     return example
 
-                dataset = dataset.map(add_eos, fn_kwargs={"eos_token": tokenizer.eos_token}, **map_kwargs)
+                dataset = dataset.map(add_eos, fn_kwargs={"eos_token": self._tokenizer.eos_token}, **map_kwargs)
 
             # Tokenize dataset
             if isinstance(dataset, Dataset):  # `IterableDataset.map` does not support `desc`
